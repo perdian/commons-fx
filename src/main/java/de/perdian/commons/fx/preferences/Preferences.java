@@ -8,14 +8,9 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.util.StringConverter;
 
 /**
  * A set of preferences and properties, backed by preferences file.
@@ -42,29 +37,6 @@ public class Preferences {
         this.setPreferencesListeners(new CopyOnWriteArrayList<>());
         this.setValues(values);
         this.setProperties(new HashMap<>());
-    }
-
-    public synchronized <T> ObjectProperty<T> getObjectProperty(String key, StringConverter<T> stringConverter) {
-        FallbackStringConverter<T> fallbackStringConverter = new FallbackStringConverter<>(stringConverter);
-        StringProperty stringProperty = this.getStringProperty(key);
-        ObjectProperty<T> objectProperty = new SimpleObjectProperty<>(fallbackStringConverter.fromString(stringProperty.getValue()));
-        stringProperty.addListener((o, oldStringValue, newStringValue) -> {
-            if (!Objects.equals(oldStringValue, newStringValue)) {
-                T newObjectValue = stringConverter.fromString(newStringValue);
-                if (!Objects.equals(objectProperty.getValue(), newObjectValue)) {
-                    objectProperty.setValue(newObjectValue);
-                }
-            }
-        });
-        objectProperty.addListener((o, oldObjectValue, newObjectValue) -> {
-            if (!Objects.equals(oldObjectValue, newObjectValue)) {
-                String newStringValue = stringConverter.toString(newObjectValue);
-                if (!Objects.equals(stringProperty.getValue(), newStringValue)) {
-                    stringProperty.setValue(newStringValue);
-                }
-            }
-        });
-        return objectProperty;
     }
 
     public synchronized StringProperty getStringProperty(String key) {
@@ -105,45 +77,6 @@ public class Preferences {
      */
     public Map<String, String> toMap() {
         return new HashMap<>(this.getValues());
-    }
-
-    private static class FallbackStringConverter<T> extends StringConverter<T> {
-
-        private static final Logger log = LoggerFactory.getLogger(FallbackStringConverter.class);
-
-        private StringConverter<T> delegee = null;
-
-        private FallbackStringConverter(StringConverter<T> delegee) {
-            this.setDelegee(delegee);
-        }
-
-        @Override
-        public String toString(T object) {
-            try {
-                return this.getDelegee().toString(object);
-            } catch (Exception e) {
-                log.debug("Cannot convert using toString from: {}", object, e);
-                return null;
-            }
-        }
-
-        @Override
-        public T fromString(String string) {
-            try {
-                return this.getDelegee().fromString(string);
-            } catch (Exception e) {
-                log.debug("Cannot convert using fromString from: {}", string, e);
-                return null;
-            }
-        }
-
-        private StringConverter<T> getDelegee() {
-            return this.delegee;
-        }
-        private void setDelegee(StringConverter<T> delegee) {
-            this.delegee = delegee;
-        }
-
     }
 
     boolean addPreferencesListener(PreferencesListener listener) {

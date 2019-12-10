@@ -3,50 +3,13 @@ package de.perdian.commons.fx.preferences;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.util.StringConverter;
 
 public class PreferencesTest {
-
-    @Test
-    public void getObjectProperty() {
-        Preferences preferences = new Preferences(new HashMap<>(Map.of("aKey", "42")));
-        ObjectProperty<Integer> aProperty = preferences.getObjectProperty("aKey", new StringConverter<>() {
-            @Override public String toString(Integer object) {
-                return object == null ? null : object.toString();
-            }
-            @Override public Integer fromString(String string) {
-                return StringUtils.isEmpty(string) ? null : Integer.valueOf(string);
-            }
-        });
-        Assertions.assertEquals(Integer.valueOf(42), aProperty.getValue());
-        preferences.setStringValue("aKey", "43");
-        Assertions.assertEquals(Integer.valueOf(43), aProperty.getValue());
-        aProperty.setValue(44);
-        Assertions.assertEquals("44", preferences.getStringValue("aKey").get());
-    }
-
-    @Test
-    public void getObjectPropertyWithInvalidValueInStringConverter() {
-        Preferences preferences = new Preferences(new HashMap<>(Map.of("aKey", "INVALID_1")));
-        ObjectProperty<Integer> aProperty = preferences.getObjectProperty("aKey", new StringConverter<>() {
-            @Override public String toString(Integer object) {
-                return object == null ? null : object.toString();
-            }
-            @Override public Integer fromString(String string) {
-                return StringUtils.isEmpty(string) ? null : Integer.valueOf(string);
-            }
-        });
-        Assertions.assertEquals(null, aProperty.getValue());
-        preferences.setStringValue("aKey", "INVALID_2");
-        Assertions.assertEquals(null, aProperty.getValue());
-    }
 
     @Test
     public void getStringProperty() {

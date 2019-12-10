@@ -3,7 +3,7 @@ package de.perdian.commons.fx.properties.converters;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class IdentiyStringConverterTest {
+public class IdentityStringConverterTest {
 
     @Test
     public void toStringValid() {
