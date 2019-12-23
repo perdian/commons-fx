@@ -45,7 +45,7 @@ public class PropertyFactory {
         return PropertyFactory.initializeNumberProperty(new SimpleIntegerProperty(), stringProperty, numberFormat);
     }
 
-    public static <T extends Property<Number>> T initializeNumberProperty(T numberProperty, Property<String> stringProperty, NumberFormat numberFormat) {
+    private static <T extends Property<Number>> T initializeNumberProperty(T numberProperty, Property<String> stringProperty, NumberFormat numberFormat) {
         if (StringUtils.isNotEmpty(stringProperty.getValue())) {
             try {
                 numberProperty.setValue(numberFormat.parse(stringProperty.getValue()));
