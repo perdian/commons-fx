@@ -25,13 +25,13 @@ public class GuiExecutorImpl implements GuiExecutor {
     @Override
     public void execute(GuiJob job) {
         this.getExecutor().execute(() -> {
-            this.getExecutorListeners().forEach(listener -> listener.onExecutionStarting());
+            this.getExecutorListeners().forEach(listener -> listener.onExecutionStarting(job));
             try {
                 job.execute((message, progress) -> this.getProgressListeners().forEach(progressListener -> progressListener.onProgress(message, progress)));
             } catch (Exception e) {
                 log.error("Error occured while executing job: {}", job, e);
             } finally {
-                this.getExecutorListeners().forEach(listener -> listener.onExecutionCompleted());
+                this.getExecutorListeners().forEach(listener -> listener.onExecutionCompleted(job));
             }
         });
     }

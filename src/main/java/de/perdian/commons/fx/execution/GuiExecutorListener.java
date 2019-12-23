@@ -2,7 +2,7 @@ package de.perdian.commons.fx.execution;
 
 public interface GuiExecutorListener {
 
-    void onExecutionStarting();
-    void onExecutionCompleted();
+    void onExecutionStarting(GuiJob job);
+    void onExecutionCompleted(GuiJob job);
 
 }
