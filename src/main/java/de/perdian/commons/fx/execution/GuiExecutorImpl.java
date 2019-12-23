@@ -24,8 +24,8 @@ public class GuiExecutorImpl implements GuiExecutor {
 
     @Override
     public void execute(GuiJob job) {
-        this.getExecutorListeners().forEach(listener -> listener.onExecutionStarting());
         this.getExecutor().execute(() -> {
+            this.getExecutorListeners().forEach(listener -> listener.onExecutionStarting());
             try {
                 job.execute((message, progress) -> this.getProgressListeners().forEach(progressListener -> progressListener.onProgress(message, progress)));
             } catch (Exception e) {
