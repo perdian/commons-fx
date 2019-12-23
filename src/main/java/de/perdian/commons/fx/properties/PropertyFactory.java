@@ -1,5 +1,6 @@
 package de.perdian.commons.fx.properties;
 
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Objects;
@@ -34,6 +35,10 @@ public class PropertyFactory {
             }
         });
         return objectProperty;
+    }
+
+    public static IntegerProperty createIntegerProperty(Property<String> stringProperty) {
+        return PropertyFactory.createIntegerProperty(stringProperty, new DecimalFormat("0"));
     }
 
     public static IntegerProperty createIntegerProperty(Property<String> stringProperty, NumberFormat numberFormat) {

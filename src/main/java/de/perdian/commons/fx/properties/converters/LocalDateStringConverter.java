@@ -16,6 +16,10 @@ public class LocalDateStringConverter extends StringConverter<LocalDate> {
     private DateTimeFormatter formatter = null;
     private List<DateTimeFormatter> parsers = null;
 
+    public LocalDateStringConverter() {
+        this(DateTimeFormatter.ofPattern("yyyyMMdd"), List.of(DateTimeFormatter.ofPattern("yyyyMMdd"), DateTimeFormatter.ofPattern("yyyy-MM-dd"), DateTimeFormatter.ofPattern("dd.MM.yyyy"), DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+    }
+
     public LocalDateStringConverter(DateTimeFormatter formatter, List<DateTimeFormatter> parsers) {
         this.setFormatter(formatter);
         this.setParsers(parsers);

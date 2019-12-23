@@ -21,6 +21,7 @@ public class LocalDateStringConverterTest {
 
     @Test
     public void fromStringValid() {
+        Assertions.assertEquals(LocalDate.of(2000, 1, 2), new LocalDateStringConverter().fromString("20000102"));
         Assertions.assertEquals(LocalDate.of(2000, 1, 2), new LocalDateStringConverter(null, List.of(DateTimeFormatter.ofPattern("yyyy__MM__dd"))).fromString("2000__01__02"));
         Assertions.assertEquals(LocalDate.of(2000, 1, 2), new LocalDateStringConverter(null, List.of(DateTimeFormatter.ofPattern("ddMMyyyy"), DateTimeFormatter.ofPattern("yyyy__MM__dd"))).fromString("2000__01__02"));
         Assertions.assertEquals(LocalDate.of(2000, 1, 2), new LocalDateStringConverter(null, List.of(DateTimeFormatter.ofPattern("ddMMyyyy"), DateTimeFormatter.ofPattern("yyyy__MM__dd"))).fromString("02012000"));

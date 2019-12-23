@@ -40,9 +40,13 @@ public class Preferences {
     }
 
     public synchronized StringProperty getStringProperty(String key) {
+        return this.getStringProperty(key, null);
+    }
+
+    public synchronized StringProperty getStringProperty(String key, String defaultValue) {
         StringProperty stringProperty = this.getProperties().get(key);
         if (stringProperty == null) {
-            stringProperty = new SimpleStringProperty(this.getStringValue(key).orElse(null));
+            stringProperty = new SimpleStringProperty(this.getStringValue(key).orElse(defaultValue));
             stringProperty.addListener((o, oldValue, newValue) -> this.setStringValue(key, newValue));
             this.getProperties().put(key, stringProperty);
         }
