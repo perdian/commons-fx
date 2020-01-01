@@ -9,6 +9,14 @@
     <description>Commonly used JavaFX components and helpers</description>
     <url>https://github.com/perdian/commons-fx</url>
 
+    <licenses>
+        <license>
+            <name>Apache License Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <scm>
         <url>https://github.com/perdian/commons-fx</url>
         <connection>scm:git:https://github.com/perdian/commons-fx.git</connection>
