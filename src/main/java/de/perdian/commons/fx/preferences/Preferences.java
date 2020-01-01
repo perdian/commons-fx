@@ -74,10 +74,13 @@ public class Preferences {
     }
 
     /**
-     * Creates a snapshot of the values in this {@code Preferences} objects. Any change made to the
-     * {@code Preferences} object after the snapshot has been created will not be reflected in the
-     * result of this method. Also changes to the result map will not change the content of this
-     * {@code Preferences} object.
+     * Creates a snapshot of the values in this {@code Preferences} objects.
+     *
+     * @return
+     *      a new {@code Map} that represents the content of this {@code Preferences} instance.
+     *      Any change made to the {@code Preferences} object after the snapshot has been created
+     *      will not be reflected in the result of this method. Also changes to the result map will
+     *      not change the content of this {@code Preferences} object.
      */
     public Map<String, String> toMap() {
         return new HashMap<>(this.getValues());
