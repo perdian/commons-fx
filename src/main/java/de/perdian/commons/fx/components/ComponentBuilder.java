@@ -24,6 +24,7 @@ import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Region;
 import javafx.util.StringConverter;
 
 public class ComponentBuilder {
@@ -106,6 +107,10 @@ public class ComponentBuilder {
         comboBox.disableProperty().bind(Bindings.size(comboBoxValues).lessThanOrEqualTo(1));
         Bindings.bindBidirectional(comboBox.valueProperty(), currencyProperty);
         return new ComponentBuilderItem<>(this, comboBox);
+    }
+
+    public <R extends Region> ComponentBuilderItem<R> createCustom(R region) {
+        return new ComponentBuilderItem<>(this, region);
     }
 
     public boolean addListener(ComponentBuilderListener listener) {
