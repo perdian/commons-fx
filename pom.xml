@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.perdian.commons</groupId>
     <artifactId>commons-fx</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
 
     <name>Commons FX</name>
     <description>Commonly used JavaFX components and helpers</description>
