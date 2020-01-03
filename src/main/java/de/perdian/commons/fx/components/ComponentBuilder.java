@@ -3,7 +3,6 @@ package de.perdian.commons.fx.components;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -59,9 +58,8 @@ public class ComponentBuilder {
         return new ComponentBuilderItem<>(this, textField);
     }
 
-    public <T> ComponentBuilderItem<ComboBox<T>> createComboBox(Property<T> property, Function<T, String> valueToStringFunction, List<Map.Entry<String, T>> availableValues) {
-        List<T> comboBoxValues = availableValues.stream().map(Map.Entry::getValue).collect(Collectors.toList());
-        ComboBox<T> comboBox = new ComboBox<>(FXCollections.observableArrayList(comboBoxValues));
+    public <T> ComponentBuilderItem<ComboBox<T>> createComboBox(Property<T> property, Function<T, String> valueToStringFunction, List<T> availableValues) {
+        ComboBox<T> comboBox = new ComboBox<>(FXCollections.observableArrayList(availableValues));
         comboBox.setConverter(new SimpleStringConverter<>(valueToStringFunction, string -> { throw new UnsupportedOperationException(); }));
         Bindings.bindBidirectional(comboBox.valueProperty(), property);
         return new ComponentBuilderItem<>(this, comboBox);
