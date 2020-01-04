@@ -15,7 +15,9 @@ import de.perdian.commons.fx.properties.converters.IdentityStringConverter;
 import de.perdian.commons.fx.properties.converters.SimpleStringConverter;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.Property;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -66,6 +68,10 @@ public class ComponentBuilder {
     }
 
     public ComponentBuilderItem<ComboBox<String>> createCurrencySelectionComboBox(Property<String> currencyProperty, List<Property<String>> allCurrencyProperties) {
+        return this.createCurrencySelectionComboBox(currencyProperty, allCurrencyProperties, new ReadOnlyBooleanWrapper(false));
+    }
+
+    public ComponentBuilderItem<ComboBox<String>> createCurrencySelectionComboBox(Property<String> currencyProperty, List<Property<String>> allCurrencyProperties, BooleanExpression disabledExpression) {
         List<String> comboBoxInitialValues = allCurrencyProperties.stream().map(Property::getValue).filter(StringUtils::isNotEmpty).distinct().collect(Collectors.toList());
         ObservableList<String> comboBoxValues = FXCollections.observableArrayList(comboBoxInitialValues);
         allCurrencyProperties.forEach(changedProperty -> changedProperty.addListener((o, oldValue, newValue) -> {
@@ -102,7 +108,7 @@ public class ComponentBuilder {
             }
         }));
         ComboBox<String> comboBox = new ComboBox<>(comboBoxValues);
-        comboBox.disableProperty().bind(Bindings.size(comboBoxValues).lessThanOrEqualTo(1));
+        comboBox.disableProperty().bind(disabledExpression.or(Bindings.size(comboBoxValues).lessThanOrEqualTo(1)));
         Bindings.bindBidirectional(comboBox.valueProperty(), currencyProperty);
         return new ComponentBuilderItem<>(this, comboBox);
     }
