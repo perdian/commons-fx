@@ -24,6 +24,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
 import javafx.util.StringConverter;
@@ -58,6 +59,17 @@ public class ComponentBuilder {
         textField.setMinHeight(Node.BASELINE_OFFSET_SAME_AS_HEIGHT);
         textField.focusedProperty().addListener((o, oldValue, newValue) -> { if (newValue.booleanValue()) { Platform.runLater(() -> textField.selectAll()); } });
         return new ComponentBuilderItem<>(this, textField);
+    }
+
+    public ComponentBuilderItem<TextArea> createTextArea(StringProperty property) {
+        return this.createTextArea(property, new IdentityStringConverter());
+    }
+
+    public <T> ComponentBuilderItem<TextArea> createTextArea(Property<T> property, StringConverter<T> stringConverter) {
+        TextArea textArea = new TextArea();
+        Bindings.bindBidirectional(textArea.textProperty(), property, stringConverter);
+        textArea.setMinHeight(Node.BASELINE_OFFSET_SAME_AS_HEIGHT);
+        return new ComponentBuilderItem<>(this, textArea);
     }
 
     public <T> ComponentBuilderItem<ComboBox<T>> createComboBox(Property<T> property, Function<T, String> valueToStringFunction, List<T> availableValues) {

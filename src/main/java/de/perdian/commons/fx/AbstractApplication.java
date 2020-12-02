@@ -35,17 +35,17 @@ public abstract class AbstractApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-      log.info("Preparing JavaFX components");
-      Pane mainPane = this.createMainPane();
-      Scene mainScene = this.createMainScene(mainPane);
+        log.info("Preparing JavaFX components");
+        Pane mainPane = this.createMainPane();
+        Scene mainScene = this.createMainScene(mainPane);
 
-      log.info("Opening JavaFX stage");
-      primaryStage.setScene(mainScene);
-      primaryStage.setOnCloseRequest(event -> System.exit(0));
-      primaryStage.setMinWidth(800);
-      primaryStage.setMinHeight(600);
-      this.configurePrimaryStage(primaryStage);
-      primaryStage.show();
+        log.info("Opening JavaFX stage");
+        primaryStage.setScene(mainScene);
+        primaryStage.setOnCloseRequest(event -> System.exit(0));
+        primaryStage.setMinWidth(800);
+        primaryStage.setMinHeight(600);
+        this.configurePrimaryStage(primaryStage);
+        primaryStage.show();
 
     }
 
