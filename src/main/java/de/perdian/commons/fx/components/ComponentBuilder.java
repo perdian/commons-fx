@@ -72,6 +72,10 @@ public class ComponentBuilder {
         return new ComponentBuilderItem<>(this, textArea);
     }
 
+    public ComponentBuilderItem<ComboBox<String>> createComboBox(Property<String> property, List<String> availableValues) {
+        return this.createComboBox(property, Function.identity(), availableValues);
+    }
+
     public <T> ComponentBuilderItem<ComboBox<T>> createComboBox(Property<T> property, Function<T, String> valueToStringFunction, List<T> availableValues) {
         ComboBox<T> comboBox = new ComboBox<>(FXCollections.observableArrayList(availableValues));
         comboBox.setConverter(new SimpleStringConverter<>(valueToStringFunction, string -> { throw new UnsupportedOperationException(); }));
