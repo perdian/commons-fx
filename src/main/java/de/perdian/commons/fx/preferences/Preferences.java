@@ -1,100 +1,143 @@
 package de.perdian.commons.fx.preferences;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.util.StringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.function.Supplier;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
- * A set of preferences and properties, backed by preferences file.
+ * A set of JavaFX properties backed by preferences file.
  *
- * Whenever a property within the preferences is changed, the underlying file will be updated so that
- * the complete set of properties are always reflected in the storage file.
- *
- * The {@code Preferences} also provides a way to have JavaFX {@code Property} instances that are
- * synchronized to the properties. Basically whenever the value of the {@code Property} changes, the
- * new data is stored in the preferences file.
- *
- * New {@code Preferences} instances should only be created via the {@code PreferencesBuilder}.
+ * Whenever the value of a property that has been created via this {@code Preferences} instance changes
+ * the complete set of properties are stored back to the preferences file.
  *
  * @author Christian Seifert
  */
 
 public class Preferences {
 
-    private List<PreferencesListener> preferencesListeners = null;
-    private Map<String, String> values = null;
-    private Map<String, StringProperty> properties = null;
+    private static final Logger log = LoggerFactory.getLogger(Preferences.class);
 
-    Preferences(Map<String, String> values) {
-        this.setPreferencesListeners(new CopyOnWriteArrayList<>());
-        this.setValues(values);
+    private Map<String, StringProperty> properties = new HashMap<>();
+    private Path storagePath = null;
+
+    /**
+     * Create a new {@code Preferences} instance backed by the {@code Path} given as parameter
+     *
+     * @param storagePath
+     *      the {@code Path} to be used as backing file. When creating the {@code Preferences}
+     *      instance, any values stored within the backing file will be read and stored into this
+     *      {@code Preferences} instance. Whenever one of the preferences inside this
+     *      {@code Preferences} object change, the complete set of preferences will be written
+     *      back into the backing file.
+     *      Any error that occurs while reading from or writing into the backing file will be
+     *      ignored so that any user of the {@code Preferences} instance will be able to continue
+     *      working with the preferences themselves no matter what happens with the backing file.
+     *
+     */
+    public Preferences(Path storagePath) {
+        this.setStoragePath(storagePath);
         this.setProperties(new HashMap<>());
+        this.readPropertiesFromBackingFile();
     }
 
-    public synchronized StringProperty getStringProperty(String key) {
-        return this.getStringProperty(key, null);
+    public synchronized <T> ObjectProperty<T> getObjectProperty(String propertyName, StringConverter<T> converter) {
+        return this.getObjectProperty(propertyName, null, converter);
     }
 
-    public synchronized StringProperty getStringProperty(String key, String defaultValue) {
-        StringProperty stringProperty = this.getProperties().get(key);
+    public synchronized <T> ObjectProperty<T> getObjectProperty(String propertyName, T defaultValue, StringConverter<T> converter) {
+        StringProperty stringProperty = this.getStringProperty(propertyName, () -> converter.toString(defaultValue));
+        ObjectProperty<T> objectProperty = new SimpleObjectProperty<>(converter.fromString(stringProperty.getValue()));
+        stringProperty.addListener((o, oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                T newObject = converter.fromString(newValue);
+                if (!Objects.equals(newObject, objectProperty.getValue())) {
+                    objectProperty.setValue(newObject);
+                }
+            }
+        });
+        objectProperty.addListener((o, oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                String newString = converter.toString(newValue);
+                if (!Objects.equals(newString, stringProperty.getValue())) {
+                    stringProperty.setValue(newString);
+                }
+            }
+        });
+        return objectProperty;
+    }
+
+    public synchronized StringProperty getStringProperty(String propertyName) {
+        return this.getStringProperty(propertyName, () -> null);
+    }
+
+    public synchronized StringProperty getStringProperty(String propertyName, String defaultValue) {
+        return this.getStringProperty(propertyName, () -> defaultValue);
+    }
+
+    public synchronized StringProperty getStringProperty(String propertyName, Supplier<String> defaultValueSupplier) {
+        StringProperty stringProperty = this.getProperties().get(propertyName);
         if (stringProperty == null) {
-            stringProperty = new SimpleStringProperty(this.getStringValue(key).orElse(defaultValue));
-            stringProperty.addListener((o, oldValue, newValue) -> this.setStringValue(key, newValue));
-            this.getProperties().put(key, stringProperty);
+            stringProperty = new SimpleStringProperty(defaultValueSupplier.get());
+            stringProperty.addListener((o, oldValue, newValue) -> this.writePropertiesToBackingFile());
+            this.getProperties().put(propertyName, stringProperty);
         }
         return stringProperty;
     }
 
-    public synchronized Optional<String> getStringValue(String key) {
-        String storedValue = this.getValues().get(key);
-        return (storedValue == null || storedValue.isEmpty()) ? Optional.empty() : Optional.of(storedValue);
-    }
-
-    public synchronized boolean setStringValue(String key, String newValue) {
-        String oldValue = this.getValues().get(key);
-        if (Objects.equals(oldValue, newValue)) {
-            return false;
-        } else {
-            this.getValues().put(key, newValue);
-            StringProperty stringProperty = this.getProperties().get(key);
-            if (stringProperty != null) {
-                stringProperty.setValue(newValue);
+    private void readPropertiesFromBackingFile() {
+        try {
+            if (Files.exists(this.getStoragePath())) {
+                log.debug("Reading preferences from: {}", this.getStoragePath());
+                try (InputStream sourceStream = new GZIPInputStream(new BufferedInputStream(Files.newInputStream(this.getStoragePath())))) {
+                    Properties properties = new Properties();
+                    properties.loadFromXML(sourceStream);
+                    properties.entrySet().stream()
+                        .map(entry -> Map.entry((String)entry.getKey(), (String)entry.getValue()))
+                        .filter(entry -> entry.getKey() != null && !entry.getKey().isEmpty())
+                        .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
+                        .forEach(entry -> this.getStringProperty(entry.getKey(), entry.getValue()));
+                }
             }
-            this.getPreferencesListeners().forEach(listener -> listener.onPropertyChanged(key, oldValue, newValue));
-            return true;
+        } catch (Exception e) {
+            log.warn("Cannot read preferences from: {}", this.getStoragePath(), e);
         }
     }
 
-    /**
-     * Creates a snapshot of the values in this {@code Preferences} objects.
-     *
-     * @return
-     *      a new {@code Map} that represents the content of this {@code Preferences} instance.
-     *      Any change made to the {@code Preferences} object after the snapshot has been created
-     *      will not be reflected in the result of this method. Also changes to the result map will
-     *      not change the content of this {@code Preferences} object.
-     */
-    public Map<String, String> toMap() {
-        return new HashMap<>(this.getValues());
+    private void writePropertiesToBackingFile() {
+        log.debug("Writing preferences into: {}", this.getStoragePath());
+        try (OutputStream outStream = new GZIPOutputStream(new BufferedOutputStream(Files.newOutputStream(this.getStoragePath(), StandardOpenOption.CREATE)))) {
+            Properties targetProperties = new Properties();
+            properties.forEach((key, value) -> targetProperties.setProperty(key, value.getValue()));
+            targetProperties.storeToXML(outStream, null);
+        } catch (Exception e) {
+            log.warn("Cannot write preferences into: {}", this.getStoragePath(), e);
+        }
     }
 
-    boolean addPreferencesListener(PreferencesListener listener) {
-        return this.getPreferencesListeners().add(listener);
+    private Path getStoragePath() {
+        return this.storagePath;
     }
-    private List<PreferencesListener> getPreferencesListeners() {
-        return this.preferencesListeners;
-    }
-    private void setPreferencesListeners(List<PreferencesListener> preferencesListeners) {
-        this.preferencesListeners = preferencesListeners;
-    }
-
-    private Map<String, String> getValues() {
-        return this.values;
-    }
-    private void setValues(Map<String, String> values) {
-        this.values = values;
+    private void setStoragePath(Path storagePath) {
+        this.storagePath = storagePath;
     }
 
     private Map<String, StringProperty> getProperties() {
