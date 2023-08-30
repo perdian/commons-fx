@@ -1,13 +1,11 @@
 package de.perdian.commons.fx.properties.converters;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
-
-import org.apache.commons.lang3.StringUtils;
+import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javafx.util.StringConverter;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
 public class DoubleStringConverter extends StringConverter<Number> {
 
@@ -28,7 +26,7 @@ public class DoubleStringConverter extends StringConverter<Number> {
     public Double fromString(String string) {
         if ("-".equalsIgnoreCase(string) || "+".equalsIgnoreCase(string)) {
             return Double.valueOf(0);
-        } else if (!StringUtils.isEmpty(string)) {
+        } else if (string != null && !string.isEmpty()) {
             try {
                 return this.getNumberFormat().parse(string).doubleValue();
             } catch (ParseException e) {

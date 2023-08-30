@@ -1,16 +1,10 @@
 package de.perdian.commons.fx.preferences;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.apache.commons.lang3.StringUtils;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A set of preferences and properties, backed by preferences file.
@@ -55,7 +49,7 @@ public class Preferences {
 
     public synchronized Optional<String> getStringValue(String key) {
         String storedValue = this.getValues().get(key);
-        return StringUtils.isEmpty(storedValue) ? Optional.empty() : Optional.of(storedValue);
+        return (storedValue == null || storedValue.isEmpty()) ? Optional.empty() : Optional.of(storedValue);
     }
 
     public synchronized boolean setStringValue(String key, String newValue) {

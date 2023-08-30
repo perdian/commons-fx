@@ -1,10 +1,9 @@
 package de.perdian.commons.fx.preferences;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -13,10 +12,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Used to create new {@code Preferences} instances that are bound to an underlying file on the
@@ -59,7 +54,8 @@ public class PreferencesBuilder {
                     properties.loadFromXML(sourceStream);
                     properties.entrySet().stream()
                         .map(entry -> Map.entry((String)entry.getKey(), (String)entry.getValue()))
-                        .filter(entry -> StringUtils.isNotEmpty(entry.getKey()) && StringUtils.isNotEmpty(entry.getValue()))
+                        .filter(entry -> entry.getKey() != null && !entry.getKey().isEmpty())
+                        .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
                         .forEach(entry -> resultMap.put(entry.getKey(), entry.getValue()));
                 }
             } catch (Exception e) {

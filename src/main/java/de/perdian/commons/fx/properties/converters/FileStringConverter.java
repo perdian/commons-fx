@@ -1,10 +1,8 @@
 package de.perdian.commons.fx.properties.converters;
 
-import java.io.File;
-
-import org.apache.commons.lang3.StringUtils;
-
 import javafx.util.StringConverter;
+
+import java.io.File;
 
 public class FileStringConverter extends StringConverter<File> {
 
@@ -15,7 +13,7 @@ public class FileStringConverter extends StringConverter<File> {
 
     @Override
     public File fromString(String string) {
-        return StringUtils.isEmpty(string) ? null : new File(string);
+        return string == null || string.isEmpty() ? null : new File(string);
     }
 
 }
